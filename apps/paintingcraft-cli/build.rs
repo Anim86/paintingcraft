@@ -16,21 +16,21 @@ fn main() -> std::io::Result<()> {
     // FileVersion / ProductVersion strings and the numeric FILEVERSION / PRODUCTVERSION are left
     // to `WindowsResource::new`, which reads the Cargo package version. A pre-release such as
     // `1.2.3-rc.1` stays in the strings; the numeric fields are `1.2.3.0`.
-    res.set_icon("../../assets/app-icon/photocraft.ico")
-        .set("ProductName", "PhotoCraft")
-        .set("FileDescription", "PhotoCraft command-line interface")
-        .set("CompanyName", "Learning Machines LLC")
-        .set("LegalCopyright", "Copyright (c) the PhotoCraft authors. MIT OR Apache-2.0.")
-        .set("OriginalFilename", "photocraft-cli.exe")
-        .set("InternalName", "photocraft-cli");
+    res.set_icon("../../assets/app-icon/paintingcraft.ico")
+        .set("ProductName", "PaintingCraft")
+        .set("FileDescription", "PaintingCraft command-line interface")
+        .set("CompanyName", "PaintingCraft Contributors")
+        .set("LegalCopyright", "Copyright (c) the PaintingCraft authors. MIT OR Apache-2.0.")
+        .set("OriginalFilename", "paintingcraft-cli.exe")
+        .set("InternalName", "paintingcraft-cli");
     if let Err(err) = res.compile() {
-        if std::env::var_os("PHOTOCRAFT_REQUIRE_WINRES").is_some() {
+        if std::env::var_os("PAINTINGCRAFT_REQUIRE_WINRES").is_some() || std::env::var_os("PHOTOCRAFT_REQUIRE_WINRES").is_some() {
             return Err(std::io::Error::other(format!(
-                "embedding Windows resources into photocraft-cli.exe failed: {err}. \
+                "embedding Windows resources into paintingcraft-cli.exe failed: {err}. \
                  Install the Windows SDK resource compiler (rc.exe) or mingw-w64 windres and rebuild."
             )));
         }
-        println!("cargo:warning=photocraft-cli.exe built without icon/version resources: {err}");
+        println!("cargo:warning=paintingcraft-cli.exe built without icon/version resources: {err}");
     }
     Ok(())
 }

@@ -14,23 +14,29 @@ use crate::{PhotocraftApp, icons, widgets};
 
 /// Paintingcraft toolbar: streamlined exclusively for painting, drawing and artistic tools.
 const TOOL_SECTIONS: &[&[&[Tool]]] = &[
-    // Primary Painting & Drawing Tools
+    // Primary Painting & Drawing Tools (separated buttons)
     &[
-        &[Tool::Brush, Tool::Pencil, Tool::MixerBrush, Tool::ColorReplacement],
+        &[Tool::Brush],
+        &[Tool::Pencil],
+        &[Tool::MixerBrush],
+        &[Tool::ColorReplacement],
     ],
-    // Erasing & Clearing
+    // Erasing & Clearing (separated button for main eraser)
     &[
-        &[Tool::Eraser, Tool::BackgroundEraser, Tool::MagicEraser],
+        &[Tool::Eraser],
+        &[Tool::BackgroundEraser, Tool::MagicEraser],
     ],
-    // Blending, Smudging & Tonal Retouching
+    // Blending, Smudging & Tonal Retouching (separated button for smudge)
     &[
-        &[Tool::Smudge, Tool::Blur, Tool::Sharpen],
+        &[Tool::Smudge],
+        &[Tool::Blur, Tool::Sharpen],
         &[Tool::Dodge, Tool::Burn, Tool::Sponge],
     ],
-    // Color Picking & Fill
+    // Color Picking & Fill (separated button for paint bucket)
     &[
         &[Tool::Eyedropper, Tool::ColorSampler],
-        &[Tool::PaintBucket, Tool::Gradient],
+        &[Tool::PaintBucket],
+        &[Tool::Gradient],
     ],
     // Stamps & History
     &[
@@ -44,9 +50,10 @@ const TOOL_SECTIONS: &[&[&[Tool]]] = &[
         &[Tool::QuickSelection, Tool::MagicWand],
         &[Tool::Move],
     ],
-    // Canvas Navigation & Orientation
+    // Canvas Navigation & Orientation (separated buttons)
     &[
-        &[Tool::RotateView, Tool::Hand],
+        &[Tool::RotateView],
+        &[Tool::Hand],
         &[Tool::Zoom],
     ],
 ];
@@ -548,7 +555,7 @@ pub fn title_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                 let max = ui.ctx().input(|i| i.viewport().maximized.unwrap_or(false));
                 ui.ctx().send_viewport_cmd(egui::ViewportCommand::Maximized(!max));
             }
-            let title = app.session.active().map(|d| format!("{}{}", d.doc.name, if d.is_dirty() { "  •" } else { "" })).unwrap_or_else(|| "PhotoCraft".into());
+            let title = app.session.active().map(|d| format!("{}{}", d.doc.name, if d.is_dirty() { "  •" } else { "" })).unwrap_or_else(|| "PaintingCraft".into());
             // The menus and the far-end controls are laid out first; the title is centred in
             // whatever room is left between them (`free`, left to right: menus then controls, or
             // controls then menus in a right-to-left UI), shortened or dropped rather than drawn
@@ -4680,11 +4687,9 @@ mod type_flyout_tests {
     }
 
     #[test]
-    fn smudge_is_in_the_blending_flyout() {
-        let blending = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).find(|slot| slot.contains(&Tool::Smudge)).expect("Blending group");
-        assert!(blending.contains(&Tool::Blur), "{blending:?}");
-        assert!(blending.contains(&Tool::Sharpen), "{blending:?}");
-        assert_eq!(blending.first(), Some(&Tool::Smudge));
+    fn smudge_has_its_own_slot() {
+        let smudge = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).find(|slot| slot.contains(&Tool::Smudge)).expect("Smudge slot");
+        assert_eq!(smudge, &[Tool::Smudge]);
     }
 
     #[test]
@@ -4724,48 +4729,21 @@ mod type_flyout_tests {
     }
 
     #[test]
-    fn long_press_brush_selects_color_replacement() {
-        let mut app = PhotocraftApp::new(photocraft_engine::Session::new(), crate::Services::default());
-        let ctx = egui::Context::default();
-        PhotocraftApp::setup_context(&ctx, crate::theme::ThemeKind::ALL[0]);
-        frame(&mut app, &ctx, 0.0, vec![]);
-        frame(&mut app, &ctx, 0.1, vec![]);
-        let index = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).position(|slot| slot.contains(&Tool::Brush)).unwrap();
-        let slot = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).nth(index).copied().unwrap();
-        // Photoshop's Brush group, Color Replacement after the Mixer Brush.
-        assert_eq!(slot, &[Tool::Brush, Tool::Pencil, Tool::MixerBrush, Tool::ColorReplacement]);
-        let bx = if Tokens::get(&ctx).pro { 30.0 } else { 36.0 };
-        let mut buttons: Vec<Rect> = ctx.viewport(|v| {
-            v.prev_pass
-                .widgets
-                .layers()
-                .flat_map(|(_, w)| w.iter())
-                .filter(|w| w.rect.size() == egui::Vec2::splat(bx) && w.sense.senses_click())
-                .map(|w| w.rect)
-                .collect()
-        });
-        buttons.sort_by(|a, b| a.top().total_cmp(&b.top()));
-        let at = buttons[index].center();
-        let pointer = |pos, pressed| egui::Event::PointerButton { pos, button: egui::PointerButton::Primary, pressed, modifiers: Default::default() };
-        frame(&mut app, &ctx, 1.0, vec![egui::Event::PointerMoved(at), pointer(at, true)]);
-        frame(&mut app, &ctx, 1.36, vec![]);
-        frame(&mut app, &ctx, 1.4, vec![pointer(at, false)]);
-        frame(&mut app, &ctx, 1.45, vec![]);
-        let key = egui::Id::new(("tool-slot", index));
-        let menu = ctx.memory(|m| m.area_rect(key.with("flyout"))).unwrap();
-        // The last of the four 26-point rows.
-        let row = egui::pos2(menu.left() + 65.0, menu.bottom() - 20.0);
-        frame(&mut app, &ctx, 2.0, vec![egui::Event::PointerMoved(row), pointer(row, true)]);
-        frame(&mut app, &ctx, 2.05, vec![pointer(row, false)]);
-        assert_eq!(app.ui.tool, Tool::ColorReplacement);
-        assert_eq!(crate::icons::tool_icon(Tool::ColorReplacement), "brush-replace");
+    fn painting_tools_are_separate_slots() {
+        let brush = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).find(|slot| slot.contains(&Tool::Brush)).unwrap();
+        let pencil = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).find(|slot| slot.contains(&Tool::Pencil)).unwrap();
+        let mixer = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).find(|slot| slot.contains(&Tool::MixerBrush)).unwrap();
+        assert_eq!(brush, &[Tool::Brush]);
+        assert_eq!(pencil, &[Tool::Pencil]);
+        assert_eq!(mixer, &[Tool::MixerBrush]);
     }
 
     #[test]
-    fn rotate_view_is_in_the_hand_flyout() {
-        let hand = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).find(|slot| slot.contains(&Tool::Hand)).expect("Hand group");
-        assert!(hand.contains(&Tool::RotateView));
-        assert!(hand.contains(&Tool::Hand));
+    fn rotate_view_and_hand_are_separate_slots() {
+        let rotate = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).find(|slot| slot.contains(&Tool::RotateView)).expect("RotateView slot");
+        let hand = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).find(|slot| slot.contains(&Tool::Hand)).expect("Hand slot");
+        assert_eq!(rotate, &[Tool::RotateView]);
+        assert_eq!(hand, &[Tool::Hand]);
         assert_eq!(Tool::RotateView.key(), 'R');
     }
 
@@ -4810,7 +4788,7 @@ mod toolbar_hidden_tests {
         let slots: usize = TOOL_SECTIONS.iter().map(|section| section.len()).sum();
         hide(&mut app, &Tool::ALL);
         assert_eq!(tool_buttons(&mut app), all - slots, "every tool slot is gone when every tool is hidden");
-        hide(&mut app, &[Tool::Brush, Tool::Pencil, Tool::MixerBrush, Tool::ColorReplacement]);
+        hide(&mut app, &[Tool::Brush]);
         assert_eq!(tool_buttons(&mut app), all - 1, "a slot whose tools are all hidden is gone");
         hide(&mut app, &[Tool::Sponge]);
         assert_eq!(tool_buttons(&mut app), all, "a slot with a visible tool stays");
