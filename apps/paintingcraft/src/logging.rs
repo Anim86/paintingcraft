@@ -24,15 +24,15 @@ use std::time::SystemTime;
 use log::LevelFilter;
 
 /// The current log file's name inside the log directory.
-pub const LOG_FILE: &str = "photocraft.log";
-/// How many previous logs are kept (`photocraft.1.log` … `photocraft.<KEEP>.log`).
+pub const LOG_FILE: &str = "paintingcraft.log";
+/// How many previous logs are kept (`paintingcraft.1.log` … `paintingcraft.<KEEP>.log`).
 pub const KEEP: usize = 2;
 /// The log file stops growing past this size (a runaway warning can't fill the disk).
 pub const MAX_FILE_BYTES: u64 = 16 * 1024 * 1024;
 /// Records kept in memory until the log file is attached.
 pub const MAX_PENDING: usize = 512;
 /// The built-in filter when `RUST_LOG` is unset or empty.
-pub const DEFAULT_FILTER: &str = "warn,photocraft*=info";
+pub const DEFAULT_FILTER: &str = "warn,paintingcraft*=info,photocraft*=info";
 
 /// Per-target level filter parsed from env_logger-style directives.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -269,8 +269,8 @@ mod tests {
     #[test]
     fn the_default_filter_shows_photocraft_info_and_other_crates_warnings() {
         let f = Filter::parse(DEFAULT_FILTER);
-        assert_eq!(f.level_for("photocraft"), LevelFilter::Info);
-        assert_eq!(f.level_for("photocraft::gpu_startup"), LevelFilter::Info);
+        assert_eq!(f.level_for("paintingcraft"), LevelFilter::Info);
+        assert_eq!(f.level_for("paintingcraft::gpu_startup"), LevelFilter::Info);
         assert_eq!(f.level_for("photocraft_gpu::health"), LevelFilter::Info);
         assert_eq!(f.level_for("wgpu_core::device"), LevelFilter::Warn);
         assert_eq!(f.level_for("naga"), LevelFilter::Warn);

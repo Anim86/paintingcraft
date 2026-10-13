@@ -1,6 +1,6 @@
 [package]
-name = "photocraft-cli"
-description = "Headless Photocraft: convert, inspect, run commands, batch, MCP server"
+name = "paintingcraft-cli"
+description = "Headless Paintingcraft: convert, inspect, run commands, batch, MCP server"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -15,11 +15,11 @@ heif = ["photocraft-codecs/heif"]
 workspace = true
 
 [lib]
-name = "photocraft_cli"
+name = "paintingcraft_cli"
 path = "src/lib.rs"
 
 [[bin]]
-name = "photocraft-cli"
+name = "paintingcraft-cli"
 path = "src/main.rs"
 
 [dependencies]

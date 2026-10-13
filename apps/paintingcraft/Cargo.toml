@@ -1,10 +1,10 @@
 [package]
-name = "photocraft"
+name = "paintingcraft"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-default-run = "photocraft"
-description = "Photocraft: an open-source, native image editor"
+default-run = "paintingcraft"
+description = "Paintingcraft: an open-source, native digital painting application"
 build = "build.rs"
 
 [features]

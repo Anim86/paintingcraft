@@ -426,7 +426,7 @@ impl Default for Panels {
             toolbar: true,
             options_bar: true,
             status_bar: true,
-            brush_settings: false,
+            brush_settings: true,
             character: false,
             toolbar_double: false,
             dock: true,

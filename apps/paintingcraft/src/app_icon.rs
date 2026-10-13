@@ -29,13 +29,13 @@ pub fn window_icon() -> egui::IconData {
 #[cfg(target_os = "macos")]
 const PNG: &[u8] = include_bytes!("../../../assets/app-icon/photocraft-1024.png");
 #[cfg(not(target_os = "macos"))]
-const PNG: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/ai.storyteller.photocraft.png");
+const PNG: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/ai.storyteller.paintingcraft.png");
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    const ICO: &[u8] = include_bytes!("../../../assets/app-icon/photocraft.ico");
+    const ICO: &[u8] = include_bytes!("../../../assets/app-icon/paintingcraft.ico");
     const WXS: &str = include_str!("../../../packaging/windows/photocraft.wxs");
 
     fn u16_at(b: &[u8], i: usize) -> usize {

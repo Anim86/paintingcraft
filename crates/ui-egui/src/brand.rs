@@ -7,7 +7,7 @@ use egui::{Color32, Context, Id, Rect, TextureHandle, TextureOptions, Ui, pos2};
 use photocraft_codecs::{ChannelLayout, SampleType};
 
 /// 128 px: sharp at 20 pt on a 3× display, and the mipmaps keep it clean at 1×.
-const ICON_PNG: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/128x128/apps/ai.storyteller.photocraft.png");
+const ICON_PNG: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/128x128/apps/ai.storyteller.paintingcraft.png");
 
 /// The icon's pixels (one transparent pixel if it couldn't be decoded, which a test rules out).
 fn decode() -> egui::ColorImage {
@@ -22,19 +22,19 @@ fn decode() -> egui::ColorImage {
 
 /// The icon texture, uploaded on first use and kept in the context.
 fn texture(ctx: &Context) -> TextureHandle {
-    let id = Id::new("photocraft-brand-mark");
+    let id = Id::new("paintingcraft-brand-mark");
     if let Some(tex) = ctx.data(|d| d.get_temp::<TextureHandle>(id)) {
         return tex;
     }
     let options = TextureOptions { mipmap_mode: Some(egui::TextureFilter::Linear), ..TextureOptions::LINEAR };
-    let tex = ctx.load_texture("photocraft-brand-mark", decode(), options);
+    let tex = ctx.load_texture("paintingcraft-brand-mark", decode(), options);
     ctx.data_mut(|d| d.insert_temp(id, tex.clone()));
     tex
 }
 
 /// Where the mark was painted this frame (tests and screenshots).
 fn rect_id() -> Id {
-    Id::new("photocraft-brand-mark-rect")
+    Id::new("paintingcraft-brand-mark-rect")
 }
 
 /// Paint the mark into `r` (square).

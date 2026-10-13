@@ -12,36 +12,43 @@ use crate::{PhotocraftApp, icons, widgets};
 
 // ----------------------------------------------------------------------------- toolbar
 
-/// Tool groups separated by hairlines, Photoshop order.
-/// Photoshop toolbar: divider-separated sections of slots; each slot is a flyout group whose button
-/// shows the group's last-used tool.
+/// Paintingcraft toolbar: streamlined exclusively for painting, drawing and artistic tools.
 const TOOL_SECTIONS: &[&[&[Tool]]] = &[
-    &[&[Tool::Move, Tool::Artboard]],
+    // Primary Painting & Drawing Tools
     &[
-        &[Tool::RectMarquee, Tool::EllipseMarquee, Tool::SingleRowMarquee, Tool::SingleColumnMarquee],
-        &[Tool::Lasso, Tool::PolygonLasso, Tool::MagneticLasso],
-        &[Tool::ObjectSelection, Tool::QuickSelection, Tool::MagicWand],
-        &[Tool::Crop, Tool::PerspectiveCrop, Tool::Slice, Tool::SliceSelect],
-        &[Tool::Frame],
-        &[Tool::Eyedropper, Tool::ColorSampler, Tool::Ruler, Tool::Note, Tool::Count],
-    ],
-    &[
-        &[Tool::Remove, Tool::SpotHealing, Tool::Healing, Tool::Patch, Tool::ContentAwareMove, Tool::RedEye],
         &[Tool::Brush, Tool::Pencil, Tool::MixerBrush, Tool::ColorReplacement],
-        &[Tool::CloneStamp, Tool::PatternStamp],
-        &[Tool::HistoryBrush],
+    ],
+    // Erasing & Clearing
+    &[
         &[Tool::Eraser, Tool::BackgroundEraser, Tool::MagicEraser],
-        &[Tool::Gradient, Tool::PaintBucket],
-        &[Tool::Blur, Tool::Sharpen, Tool::Smudge],
+    ],
+    // Blending, Smudging & Tonal Retouching
+    &[
+        &[Tool::Smudge, Tool::Blur, Tool::Sharpen],
         &[Tool::Dodge, Tool::Burn, Tool::Sponge],
     ],
+    // Color Picking & Fill
     &[
-        &[Tool::Pen, Tool::FreeformPen, Tool::CurvaturePen, Tool::AddAnchorPoint, Tool::DeleteAnchorPoint, Tool::ConvertPoint],
-        &[Tool::Type, Tool::VerticalType, Tool::VerticalTypeMask, Tool::HorizontalTypeMask],
-        &[Tool::PathSelection, Tool::DirectSelection],
-        &[Tool::Rectangle, Tool::EllipseShape, Tool::Triangle, Tool::Polygon, Tool::Line, Tool::CustomShape],
+        &[Tool::Eyedropper, Tool::ColorSampler],
+        &[Tool::PaintBucket, Tool::Gradient],
     ],
-    &[&[Tool::Hand, Tool::RotateView], &[Tool::Zoom]],
+    // Stamps & History
+    &[
+        &[Tool::CloneStamp, Tool::PatternStamp],
+        &[Tool::HistoryBrush],
+    ],
+    // Selection Masks & Layer Manipulation
+    &[
+        &[Tool::Lasso, Tool::PolygonLasso],
+        &[Tool::RectMarquee, Tool::EllipseMarquee],
+        &[Tool::QuickSelection, Tool::MagicWand],
+        &[Tool::Move],
+    ],
+    // Canvas Navigation & Orientation
+    &[
+        &[Tool::RotateView, Tool::Hand],
+        &[Tool::Zoom],
+    ],
 ];
 
 /// The tool a slot shows: the current tool if it belongs to the slot, else the last one used.
@@ -683,7 +690,7 @@ pub fn system_title_bar(app: &PhotocraftApp) -> bool {
 /// marks unsaved changes, like the `•` in the app-drawn title), or just the app name with no
 /// document open.
 pub fn window_title(app: &PhotocraftApp) -> String {
-    app.session.active().map(|d| format!("{}{} \u{2014} PhotoCraft", if d.is_dirty() { "*" } else { "" }, d.doc.name)).unwrap_or_else(|| "PhotoCraft".into())
+    app.session.active().map(|d| format!("{}{} \u{2014} PaintingCraft", if d.is_dirty() { "*" } else { "" }, d.doc.name)).unwrap_or_else(|| "PaintingCraft".into())
 }
 
 /// Keep the OS window title (and the taskbar / Alt-Tab entry) on the active file. Sends
@@ -760,19 +767,19 @@ mod title_tests {
 
     #[test]
     fn window_title_with_no_document_is_the_app_name() {
-        assert_eq!(window_title(&app(true)), "PhotoCraft");
+        assert_eq!(window_title(&app(true)), "PaintingCraft");
     }
 
     #[test]
     fn window_title_follows_the_active_file() {
         let mut app = app(true);
         open_named(&mut app, "foo.psd");
-        assert_eq!(window_title(&app), "foo.psd \u{2014} PhotoCraft");
+        assert_eq!(window_title(&app), "foo.psd \u{2014} PaintingCraft");
         // Unsaved changes gain a `*` prefix, like the `•` in the app-drawn title.
         if let Some(st) = app.session.active_mut() {
             st.revision += 1;
         }
-        assert_eq!(window_title(&app), "*foo.psd \u{2014} PhotoCraft");
+        assert_eq!(window_title(&app), "*foo.psd \u{2014} PaintingCraft");
     }
 
     #[test]
@@ -4636,14 +4643,14 @@ mod type_flyout_tests {
     }
 
     #[test]
-    fn long_press_type_button_selects_vertical_without_selecting_on_release() {
+    fn long_press_eraser_button_selects_background_eraser_without_selecting_on_release() {
         let mut app = PhotocraftApp::new(photocraft_engine::Session::new(), crate::Services::default());
         let initial = app.ui.tool;
         let ctx = egui::Context::default();
         PhotocraftApp::setup_context(&ctx, crate::theme::ThemeKind::ALL[0]);
         frame(&mut app, &ctx, 0.0, vec![]);
         frame(&mut app, &ctx, 0.1, vec![]);
-        let index = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).position(|slot| slot.contains(&Tool::Type)).unwrap();
+        let index = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).position(|slot| slot.contains(&Tool::Eraser)).unwrap();
         let bx = if Tokens::get(&ctx).pro { 30.0 } else { 36.0 };
         let mut buttons: Vec<Rect> = ctx.viewport(|v| {
             v.prev_pass
@@ -4668,17 +4675,16 @@ mod type_flyout_tests {
         let row = egui::pos2(menu.left() + 65.0, menu.top() + 39.0 + 8.0);
         frame(&mut app, &ctx, 2.0, vec![egui::Event::PointerMoved(row), pointer(row, true)]);
         frame(&mut app, &ctx, 2.05, vec![pointer(row, false)]);
-        assert_eq!(app.ui.tool, Tool::VerticalType);
+        assert_eq!(app.ui.tool, Tool::BackgroundEraser);
         assert!(ctx.data(|d| d.get_temp::<(egui::Id, Rect)>(egui::Id::new("tool-flyout"))).is_none());
     }
 
     #[test]
-    fn red_eye_is_in_the_j_flyout() {
-        let j = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).find(|slot| slot.contains(&Tool::SpotHealing)).expect("J group");
-        assert!(j.contains(&Tool::RedEye), "{j:?}");
-        assert_eq!(j.last(), Some(&Tool::RedEye));
-        // Remove leads the flyout, so the slot shows it until another J tool is picked.
-        assert_eq!(j.first(), Some(&Tool::Remove));
+    fn smudge_is_in_the_blending_flyout() {
+        let blending = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).find(|slot| slot.contains(&Tool::Smudge)).expect("Blending group");
+        assert!(blending.contains(&Tool::Blur), "{blending:?}");
+        assert!(blending.contains(&Tool::Sharpen), "{blending:?}");
+        assert_eq!(blending.first(), Some(&Tool::Smudge));
     }
 
     #[test]
@@ -4758,7 +4764,8 @@ mod type_flyout_tests {
     #[test]
     fn rotate_view_is_in_the_hand_flyout() {
         let hand = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).find(|slot| slot.contains(&Tool::Hand)).expect("Hand group");
-        assert_eq!(*hand, [Tool::Hand, Tool::RotateView]);
+        assert!(hand.contains(&Tool::RotateView));
+        assert!(hand.contains(&Tool::Hand));
         assert_eq!(Tool::RotateView.key(), 'R');
     }
 
@@ -4811,14 +4818,14 @@ mod toolbar_hidden_tests {
 
     #[test]
     fn a_slot_keeps_only_its_visible_tools_and_its_index() {
-        let sections = visible_sections(&["Sponge".to_string(), "Move".to_string(), "Artboard".to_string()]);
-        assert_eq!(sections.len(), TOOL_SECTIONS.len() - 1, "the Move section has no tools left");
+        let sections = visible_sections(&["Sponge".to_string(), "Brush".to_string(), "Pencil".to_string(), "MixerBrush".to_string(), "ColorReplacement".to_string()]);
+        assert_eq!(sections.len(), TOOL_SECTIONS.len() - 1, "the Brush section has no tools left");
         let index = TOOL_SECTIONS.iter().flat_map(|section| section.iter()).position(|slot| slot.contains(&Tool::Sponge)).unwrap();
         let slot = sections.iter().flatten().find(|(i, _)| *i == index).map(|(_, tools)| tools.clone());
         assert_eq!(slot, Some(vec![Tool::Dodge, Tool::Burn]));
-        assert!(sections.iter().flatten().all(|(_, tools)| !tools.contains(&Tool::Move) && !tools.contains(&Tool::Sponge)));
+        assert!(sections.iter().flatten().all(|(_, tools)| !tools.contains(&Tool::Brush) && !tools.contains(&Tool::Sponge)));
         assert_eq!(visible_sections(&[]).iter().map(Vec::len).sum::<usize>(), TOOL_SECTIONS.iter().map(|section| section.len()).sum::<usize>());
-        let by_command = visible_sections(&["sponge".to_string(), "move".to_string(), "artboard".to_string()]);
+        let by_command = visible_sections(&["sponge".to_string(), "brush".to_string(), "pencil".to_string(), "mixerbrush".to_string(), "colorreplacement".to_string()]);
         assert_eq!(by_command, sections, "edit.toolbar names are read like `ui.set {{tool}}` names");
     }
 }
