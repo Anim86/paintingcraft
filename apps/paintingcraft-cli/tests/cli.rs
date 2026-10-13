@@ -343,11 +343,11 @@ fn batch_skips_recorded_view_and_save_steps() {
 
 #[test]
 fn parse_actions_formats() {
-    let a = photocraft_cli::parse_actions(r#"[{"command":"a","params":{"x":1}},{"id":"b"}]"#).unwrap();
+    let a = paintingcraft_cli::parse_actions(r#"[{"command":"a","params":{"x":1}},{"id":"b"}]"#).unwrap();
     assert_eq!(a, vec![("a".to_string(), json!({"x":1})), ("b".to_string(), json!({}))]);
-    assert!(photocraft_cli::parse_actions(r#"{"actions":[{"command":"c"}]}"#).unwrap().len() == 1);
-    assert!(photocraft_cli::parse_actions(r#"[{"params":{}}]"#).is_err());
-    assert!(photocraft_cli::parse_actions("7").is_err());
+    assert!(paintingcraft_cli::parse_actions(r#"{"actions":[{"command":"c"}]}"#).unwrap().len() == 1);
+    assert!(paintingcraft_cli::parse_actions(r#"[{"params":{}}]"#).is_err());
+    assert!(paintingcraft_cli::parse_actions("7").is_err());
     // #489: the step shapes a recorded action and a droplet store, bare or wrapped.
     let want = vec![("a".to_string(), json!({"x":1})), ("b".to_string(), json!({}))];
     for text in [
@@ -357,10 +357,10 @@ fn parse_actions_formats() {
         r#"{"photocraftDroplet":1,"action":{"steps":[["a",{"x":1}],{"command":"b"}]}}"#,
         r#"{"actions":[["a",{"x":1}],["b",{}]]}"#,
     ] {
-        assert_eq!(photocraft_cli::parse_actions(text).unwrap(), want, "{text}");
+        assert_eq!(paintingcraft_cli::parse_actions(text).unwrap(), want, "{text}");
     }
     for text in ["[42]", "[[]]", "[[7,{}]]", r#"{"name":"x"}"#] {
-        assert!(photocraft_cli::parse_actions(text).is_err(), "{text}");
+        assert!(paintingcraft_cli::parse_actions(text).is_err(), "{text}");
     }
 }
 
@@ -545,7 +545,7 @@ fn commands_listing() {
 fn in_process_run_matches_binary() {
     let mut out = Vec::new();
     let mut err = Vec::new();
-    let code = photocraft_cli::run(&["commands".into(), "--filter".into(), "file.new".into()], &mut out, &mut err);
+    let code = paintingcraft_cli::run(&["commands".into(), "--filter".into(), "file.new".into()], &mut out, &mut err);
     assert_eq!(code, 0);
     assert!(String::from_utf8(out).unwrap().contains("file.new"));
 }
