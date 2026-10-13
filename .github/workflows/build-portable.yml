@@ -1,0 +1,42 @@
+name: Build Portable Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build-portable:
+    name: Build Paintingcraft Portable (x64)
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build Paintingcraft binaries
+        run: cargo build --release -p paintingcraft -p paintingcraft-cli --features heif --target x86_64-pc-windows-msvc
+
+      - name: Assemble portable directory
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path dist/Paintingcraft-Portable -Force
+          Copy-Item target/x86_64-pc-windows-msvc/release/paintingcraft.exe dist/Paintingcraft-Portable/
+          Copy-Item target/x86_64-pc-windows-msvc/release/paintingcraft-cli.exe dist/Paintingcraft-Portable/
+          "Paintingcraft portable mode" | Out-File -FilePath dist/Paintingcraft-Portable/portable.txt -Encoding utf8
+          Copy-Item README.md dist/Paintingcraft-Portable/
+          Compress-Archive -Path dist/Paintingcraft-Portable/* -DestinationPath dist/Paintingcraft-windows-x64-portable.zip
+
+      - name: Upload Portable Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Paintingcraft-windows-x64-portable
+          path: dist/Paintingcraft-windows-x64-portable.zip
+          retention-days: 14

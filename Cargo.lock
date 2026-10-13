@@ -4181,7 +4181,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "photocraft"
+name = "paintingcraft"
 version = "0.8.0"
 dependencies = [
  "arboard",
@@ -4268,7 +4268,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "photocraft-cli"
+name = "paintingcraft-cli"
 version = "0.8.0"
 dependencies = [
  "photocraft-automation",
@@ -4615,7 +4615,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "photocraft-web"
+name = "paintingcraft-web"
 version = "0.8.0"
 dependencies = [
  "eframe",
